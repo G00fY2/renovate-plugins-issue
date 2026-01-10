@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "RenvoateIssue"
+rootProject.name = "renovate-plugins-issue"
 
 includeBuild("build-logic")
 include(":app")
