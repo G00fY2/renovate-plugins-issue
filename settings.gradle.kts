@@ -1,30 +1,99 @@
-pluginManagement {
+rootProject.name = "renovate-plugins-issue"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+dependencyResolutionManagement {
+    @Suppress("UnstableApiUsage")
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    @Suppress("UnstableApiUsage")
     repositories {
         google {
             content {
+                includeGroupAndSubgroups("androidx")
                 includeGroupAndSubgroups("com.android")
                 includeGroupAndSubgroups("com.google")
-                includeGroupAndSubgroups("androidx")
             }
         }
-        mavenCentral()
-        gradlePluginPortal()
         maven {
             url = uri("https://developer.huawei.com/repo/")
             content {
                 includeGroupAndSubgroups("com.huawei")
             }
         }
-    }
-}
-dependencyResolutionManagement {
-    repositories {
-        google()
         mavenCentral()
     }
 }
 
-rootProject.name = "renovate-plugins-issue"
+pluginManagement {
+    repositories {
+        google {
+            @Suppress("UnstableApiUsage")
+            content {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        maven {
+            url = uri("https://developer.huawei.com/repo/")
+            @Suppress("UnstableApiUsage")
+            content {
+                includeGroupAndSubgroups("com.huawei")
+            }
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            when (requested.id.id) {
+                "com.huawei.agconnect.agcp" -> { // same fake id like in toml to allow plugin syntax
+                    useModule("com.huawei.agconnect:agcp:${requested.version}")
+                }
+                "com.android.application" -> { // required for agcp because of hardcoded lookups
+                    useModule("com.android.tools.build:gradle:${requested.version}")
+                }
+            }
+        }
+    }
+
+    fun extractVersionFromCatalog(key: String): String {
+        return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
+            lines.first { it.contains(key) }
+                .substringAfter("=")
+                .trim()
+                .removeSurrounding("\"")
+        }
+    }
+
+    plugins {
+        id("com.android.settings") version extractVersionFromCatalog("androidPlugin")
+    }
+}
+
+plugins {
+    id("com.android.settings")
+}
+
+settings.extensions.configure<com.android.build.api.dsl.SettingsExtension> {
+    execution {
+        profiles {
+            create("default") {
+                r8 {
+                    jvmOptions += emptyList()
+                    runInSeparateProcess = false
+                }
+            }
+            create("ci") {
+                r8 {
+                    jvmOptions += "-Xms3g -Xmx6g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 -XX:+UseParallelGC -XX:SoftRefLRUPolicyMSPerMB=1".split(" ")
+                    runInSeparateProcess = true
+                }
+            }
+            defaultProfile = "default"
+        }
+    }
+}
 
 includeBuild("build-logic")
 include(":app")
