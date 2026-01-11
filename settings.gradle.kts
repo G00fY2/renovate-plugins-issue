@@ -24,6 +24,15 @@ dependencyResolutionManagement {
     }
 }
 
+fun extractVersionFromCatalog(key: String): String {
+    return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
+        lines.first { it.contains(key) }
+            .substringAfter("=")
+            .trim()
+            .removeSurrounding("\"")
+    }
+}
+
 pluginManagement {
     repositories {
         google {
@@ -43,15 +52,6 @@ pluginManagement {
         }
         gradlePluginPortal()
         mavenCentral()
-    }
-
-    fun extractVersionFromCatalog(key: String): String {
-        return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
-            lines.first { it.contains(key) }
-                .substringAfter("=")
-                .trim()
-                .removeSurrounding("\"")
-        }
     }
 
     plugins {
