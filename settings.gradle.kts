@@ -44,18 +44,6 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
     }
-    resolutionStrategy {
-        eachPlugin {
-            when (requested.id.id) {
-                "com.huawei.agconnect.agcp" -> { // same fake id like in toml to allow plugin syntax
-                    useModule("com.huawei.agconnect:agcp:${requested.version}")
-                }
-                "com.android.application" -> { // required for agcp because of hardcoded lookups
-                    useModule("com.android.tools.build:gradle:${requested.version}")
-                }
-            }
-        }
-    }
 
     fun extractVersionFromCatalog(key: String): String {
         return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
