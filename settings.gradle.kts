@@ -24,15 +24,6 @@ dependencyResolutionManagement {
     }
 }
 
-fun extractVersionFromCatalog(key: String): String {
-    return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
-        lines.first { it.contains(key) }
-            .substringAfter("=")
-            .trim()
-            .removeSurrounding("\"")
-    }
-}
-
 pluginManagement {
     repositories {
         google {
@@ -85,3 +76,12 @@ settings.extensions.configure<com.android.build.api.dsl.SettingsExtension> {
 
 includeBuild("build-logic")
 include(":app")
+
+private fun extractVersionFromCatalog(key: String): String {
+    return file("$rootDir/gradle/libs.versions.toml").useLines { lines ->
+        lines.first { it.contains(key) }
+            .substringAfter("=")
+            .trim()
+            .removeSurrounding("\"")
+    }
+}
